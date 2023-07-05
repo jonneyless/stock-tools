@@ -7,6 +7,7 @@ use app\models\Stocks;
 use Nacmartin\PhpExecJs\PhpExecJs;
 use Yii;
 use yii\base\ErrorException;
+use yii\queue\Queue;
 
 class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInterface
 {
@@ -44,13 +45,13 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
             $this->date = sprintf('%d%02d', $year, $month);
 
             if ($this->date > date('Ym')) {
-                echo '处理结束！' . PHP_EOL;
+                Yii::info('处理结束！', Queue::class);
             }
 
             $stock = Stocks::find()->where(['>', 'code', '0'])->orderBy(['code' => SORT_ASC])->one();
         }
 
-        echo '开始处理：' . $this->date . ' - ' . $stock['code'] . PHP_EOL;
+        Yii::info('开始处理：' . $this->date . ' - ' . $stock['code'], Queue::class);
 
         $code = $stock['exchange'] . $stock['code'];
         $url = sprintf('http://finance.sina.com.cn/realstock/company/%s/hisdata/%s/%s.js?d=%s', $code, $year, $month, $this->date);
@@ -65,7 +66,7 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
                 throw new ErrorException($stock['code'] . '没有数据！');
             }
         } catch (ErrorException $e) {
-            echo $e->getMessage() . PHP_EOL;
+            Yii::info($e->getMessage(), Queue::class);
 
             Stocks::updateAll(['status' => 0], ['code' => $stock['code']]);
 

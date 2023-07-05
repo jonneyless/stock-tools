@@ -33,6 +33,11 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['yii\queue\Queue'],
+                    'logVars' => [],
+                ],
             ],
         ],
         'db' => $db,
