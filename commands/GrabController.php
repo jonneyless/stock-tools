@@ -65,7 +65,7 @@ class GrabController extends Controller
         $command->executeBatch(Stocks::collectionName());
     }
 
-    public function actionMinutes(string $begin)
+    public function actionMinutes(string $begin, string $codes = null)
     {
         $end = date('Ym', strtotime('+1 month'));
 
@@ -74,7 +74,12 @@ class GrabController extends Controller
             $year = substr($begin, 0, 4);
             $month = substr($begin, 4, 2);
 
-            $stocks = Stocks::find()->select(['code', 'exchange'])->where(['status' => 1])->orderBy(['_id' => SORT_ASC])->asArray()->all();
+            $query = Stocks::find()->select(['code', 'exchange'])->where(['status' => 1]);
+            if ($codes) {
+                $codes = explode(',', $codes);
+                $query->andWhere(['code' => $codes]);
+            }
+            $stocks = $query->orderBy(['_id' => SORT_ASC])->asArray()->all();
             foreach ($stocks as $stock) {
                 $code = $stock['exchange'] . $stock['code'];
                 $url = sprintf($this->apiUrl, $code, $year, $month, $begin);
