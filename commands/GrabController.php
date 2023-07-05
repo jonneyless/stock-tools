@@ -69,6 +69,10 @@ class GrabController extends Controller
     {
         $end = date('Ym', strtotime('+1 month'));
 
+        $sdkJs = Yii::$app->basePath . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'sina' . DIRECTORY_SEPARATOR . 'sf_sdk.js';
+        $execjs = new PhpExecJs();
+        $execjs->createContextFromFile($sdkJs);
+
         do {
             echo $begin . PHP_EOL;
             $year = substr($begin, 0, 4);
@@ -99,11 +103,9 @@ class GrabController extends Controller
                     continue;
                 }
 
-                $data = explode(',', $match[1]);
+                $command = StockQuotationMinutes::getDb()->createCommand();
 
-                $sdkJs = Yii::$app->basePath . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'sina' . DIRECTORY_SEPARATOR . 'sf_sdk.js';
-                $execjs = new PhpExecJs();
-                $execjs->createContextFromFile($sdkJs);
+                $data = explode(',', $match[1]);
 
                 foreach ($data as $datum) {
                     $minutes = $execjs->evalJs('decode("'.$datum.'")');
@@ -114,7 +116,7 @@ class GrabController extends Controller
 
                         if ($dailyDate) {
                             if ($stockDaily) {
-                                StockQuotationMinutes::getDb()->createCommand()->insert(StockQuotationMinutes::collectionName(), $stockDaily);
+                                $command->addInsert($stockDaily);
                             }
 
                             $stockDaily = [
@@ -138,9 +140,17 @@ class GrabController extends Controller
                     }
 
                     if ($stockDaily) {
-                        StockQuotationMinutes::getDb()->createCommand()->insert(StockQuotationMinutes::collectionName(), $stockDaily);
+                        $command->addInsert($stockDaily);
                     }
+
+                    unset($datum);
+                    unset($minutes);
                 }
+
+                $command->executeBatch(StockQuotationMinutes::collectionName());
+
+                unset($data);
+                unset($command);
             }
 
             $month++;
@@ -150,6 +160,8 @@ class GrabController extends Controller
             }
 
             $begin = sprintf('%d%02d', $year, $month);
+
+            unset($stocks);
         } while ($begin != $end);
     }
 }
