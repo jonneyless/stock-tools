@@ -110,12 +110,13 @@ class GrabController extends Controller
                     $stockDaily = [];
                     foreach ($minutes as $minute) {
                         $dailyDate = $minute['date'] ?? null;
+                        $price = $minute['price'] ?: 0.00;
+
                         if ($dailyDate) {
                             if ($stockDaily) {
                                 StockQuotationMinutes::getDb()->createCommand()->insert(StockQuotationMinutes::collectionName(), $stockDaily);
                             }
 
-                            $price = $minute['price'] ?: 0.00;
                             $stockDaily = [
                                 'code' => $stock['code'],
                                 'date' => date('Ymd', strtotime($dailyDate)),
