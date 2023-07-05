@@ -17,9 +17,9 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
     public string $date;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $code;
+    public ?string $code;
 
     /**
      * @inheritDoc
