@@ -33,7 +33,7 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
         $year = substr($this->date, 0, 4);
         $month = substr($this->date, 4, 2);
 
-        $stock = Stocks::find()->where(['>', 'code', $this->code ?? 0])->orderBy(['code' => SORT_ASC])->one();
+        $stock = Stocks::find()->where(['>', 'code', $this->code ?? '0'])->orderBy(['code' => SORT_ASC])->one();
         if (!$stock) {
             $month++;
             if ($month > 12) {
@@ -47,7 +47,7 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
                 echo '处理结束！' . PHP_EOL;
             }
 
-            $stock = Stocks::find()->where(['>', 'code', 0])->orderBy(['code' => SORT_ASC])->one();
+            $stock = Stocks::find()->where(['>', 'code', '0'])->orderBy(['code' => SORT_ASC])->one();
         }
 
         echo '开始处理：' . $this->date . ' - ' . $stock['code'] . PHP_EOL;
