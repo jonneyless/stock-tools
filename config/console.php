@@ -36,6 +36,7 @@ $config = [
                 [
                     'class' => 'yii\log\FileTarget',
                     'categories' => ['yii\queue\Queue'],
+                    'logFile' => '@runtime/logs/queue.log',
                     'logVars' => [],
                 ],
             ],
