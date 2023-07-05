@@ -65,9 +65,8 @@ class GrabController extends Controller
         $command->executeBatch(Stocks::collectionName());
     }
 
-    public function actionMinutes()
+    public function actionMinutes(string $begin)
     {
-        $begin = '202001';
         $end = date('Ym', strtotime('+1 month'));
 
         do {
