@@ -45,13 +45,13 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
             $this->date = sprintf('%d%02d', $year, $month);
 
             if ($this->date > date('Ym')) {
-                Yii::info('处理结束！', Queue::class);
+                echo '处理结束！' . PHP_EOL;
             }
 
             $stock = Stocks::find()->where(['>', 'code', '0'])->orderBy(['code' => SORT_ASC])->one();
         }
 
-        Yii::info('开始处理：' . $this->date . ' - ' . $stock['code'], Queue::class);
+        echo '开始处理：' . $this->date . ' - ' . $stock['code'] . PHP_EOL;
 
         $code = $stock['exchange'] . $stock['code'];
         $url = sprintf('http://finance.sina.com.cn/realstock/company/%s/hisdata/%s/%s.js?d=%s', $code, $year, $month, $this->date);
@@ -66,7 +66,7 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
                 throw new ErrorException($stock['code'] . '没有数据！');
             }
         } catch (ErrorException $e) {
-            Yii::info($e->getMessage(), Queue::class);
+            echo $e->getMessage() . PHP_EOL;
 
             Stocks::updateAll(['status' => 0], ['code' => $stock['code']]);
 
