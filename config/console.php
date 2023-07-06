@@ -19,7 +19,8 @@ $config = [
         ],
         'redis' => [
             'class' => 'yii\redis\Connection',
-            'hostname' => 'localhost',
+            'hostname' => '172.16.20.15',
+            'password' => 'stardust@redis',
             'port' => 6379,
             'database' => 0,
         ],
