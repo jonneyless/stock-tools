@@ -68,7 +68,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             try {
                 $jsData = file_get_contents($url);
 
-                $patten = sprintf('/KLC_ML_%s="(.+?)"/', $code);
+                $patten = sprintf('/KLC_ML_%s="([^"]*)"/', $code);
                 preg_match($patten, $jsData, $match);
 
                 if (!isset($match[1])) {
