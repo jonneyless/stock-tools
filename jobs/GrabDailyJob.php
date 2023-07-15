@@ -74,6 +74,8 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             } catch (ErrorException $e) {
                 echo $e->getMessage() . PHP_EOL;
 
+                Stocks::updateAll(['status' => 0], ['code' => $lastCode]);
+
                 continue;
             }
         }
