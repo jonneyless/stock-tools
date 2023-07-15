@@ -81,8 +81,8 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             }
         }
 
-//        print_r($dailyMinutes);
-//        die();
+        print_r($dailyMinutes);
+        die();
 //
 //        $command = StockQuotationMinutes::getDb()->createCommand();
 //        foreach ($dailyMinutes as $code => $minutes) {
