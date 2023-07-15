@@ -2,7 +2,6 @@
 
 namespace app\jobs;
 
-use app\models\StockQuotationMinutes;
 use app\models\Stocks;
 use Nacmartin\PhpExecJs\PhpExecJs;
 use Yii;
@@ -57,6 +56,8 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
         foreach ($codes as $code) {
             $lastCode = substr($code, 2);
 
+            echo '开始处理：' . $date . ' - ' . $lastCode . PHP_EOL;
+
             $url = sprintf($this->apiUrl, $code, $date);
 
             try {
@@ -80,43 +81,43 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             }
         }
 
-        print_r($dailyMinutes);
-        die();
-
-        $command = StockQuotationMinutes::getDb()->createCommand();
-        foreach ($dailyMinutes as $code => $minutes) {
-            $stockDaily = [];
-            foreach ($minutes as $minute) {
-                $dailyDate = $minute['date'] ?? null;
-                $price = $minute['price'] ?: 0.00;
-
-                if ($dailyDate) {
-                    $stockDaily = [
-                        'code' => $code,
-                        'date' => date('Ymd', strtotime($dailyDate)),
-                        'opening_price' => $price,
-                        'high_price' => $price,
-                        'low_price' => $price,
-                        'minutes' => [],
-                    ];
-                }
-
-                $stockDaily['closing_price'] = $price;
-                $stockDaily['high_price'] = max($stockDaily['high_price'], $price);
-                $stockDaily['low_price'] = min($stockDaily['low_price'], $price);
-                $stockDaily['minutes'][] = [
-                    'volume' => $minute['volume'] ?? 0,
-                    'price' => $price,
-                    'avg_price' => $minute['avg_price'] ?? 0.00,
-                ];
-            }
-
-            if ($stockDaily) {
-                $command->addInsert($stockDaily);
-            }
-        }
-
-        $command->executeBatch(StockQuotationMinutes::collectionName());
+//        print_r($dailyMinutes);
+//        die();
+//
+//        $command = StockQuotationMinutes::getDb()->createCommand();
+//        foreach ($dailyMinutes as $code => $minutes) {
+//            $stockDaily = [];
+//            foreach ($minutes as $minute) {
+//                $dailyDate = $minute['date'] ?? null;
+//                $price = $minute['price'] ?: 0.00;
+//
+//                if ($dailyDate) {
+//                    $stockDaily = [
+//                        'code' => $code,
+//                        'date' => date('Ymd', strtotime($dailyDate)),
+//                        'opening_price' => $price,
+//                        'high_price' => $price,
+//                        'low_price' => $price,
+//                        'minutes' => [],
+//                    ];
+//                }
+//
+//                $stockDaily['closing_price'] = $price;
+//                $stockDaily['high_price'] = max($stockDaily['high_price'], $price);
+//                $stockDaily['low_price'] = min($stockDaily['low_price'], $price);
+//                $stockDaily['minutes'][] = [
+//                    'volume' => $minute['volume'] ?? 0,
+//                    'price' => $price,
+//                    'avg_price' => $minute['avg_price'] ?? 0.00,
+//                ];
+//            }
+//
+//            if ($stockDaily) {
+//                $command->addInsert($stockDaily);
+//            }
+//        }
+//
+//        $command->executeBatch(StockQuotationMinutes::collectionName());
 
         if ($this->manual != 1 && $lastCode) {
             $codes = $this->getCodes($lastCode);
@@ -135,7 +136,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
      */
     public function getCodes(?string $code = null)
     {
-        $stocks = Stocks::find()->where(['>', 'code', $code ?? '0'])->orderBy(['code' => SORT_ASC])->limit(10)->asArray()->all();
+        $stocks = Stocks::find()->where(['>', 'code', $code ?? '0'])->andWhere(['status' => 1])->orderBy(['code' => SORT_ASC])->limit(10)->asArray()->all();
 
         return array_map(function ($stock) {
             return $stock['exchange'] . $stock['code'];
