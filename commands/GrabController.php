@@ -111,7 +111,11 @@ class GrabController extends Controller
             }
         }
 
-        print_r($match);
+        $data = explode(',', $match[1]);
+        foreach ($data as $datum) {
+            $minutes = $execjs->evalJs('decode("' . $datum . '")');
+            print_r($minutes);
+        }
         die();
     }
 }
