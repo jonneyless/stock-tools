@@ -71,7 +71,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
                 }
 
                 $data = array_slice(explode(',', $match[1]), -1, 1);
-                $dailyMinutes[$lastCode] = $execjs->evalJs('decode("' . $data . '")');
+                $dailyMinutes[$lastCode] = $execjs->evalJs('decode("' . $data[0] . '")');
             } catch (ErrorException $e) {
                 echo $e->getMessage() . PHP_EOL;
 
