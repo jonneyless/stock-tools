@@ -51,6 +51,11 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             $codes = $this->getCodes();
         }
 
+        if (!$codes) {
+            echo '处理完毕' . PHP_EOL;
+            return;
+        }
+
         $lastCode = '';
         $dailyMinutes = [];
         foreach ($codes as $code) {
@@ -81,9 +86,6 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             }
         }
 
-//        print_r($dailyMinutes);
-        die();
-//
 //        $command = StockQuotationMinutes::getDb()->createCommand();
 //        foreach ($dailyMinutes as $code => $minutes) {
 //            $stockDaily = [];
@@ -137,6 +139,10 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
     public function getCodes(?string $code = null)
     {
         $stocks = Stocks::find()->where(['>', 'code', $code ?? '0'])->andWhere(['status' => 1])->orderBy(['code' => SORT_ASC])->limit(10)->asArray()->all();
+
+        if (!$stocks) {
+            return [];
+        }
 
         return array_map(function ($stock) {
             return $stock['exchange'] . $stock['code'];
