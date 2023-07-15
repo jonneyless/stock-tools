@@ -7,7 +7,6 @@ use app\models\Stocks;
 use Nacmartin\PhpExecJs\PhpExecJs;
 use Yii;
 use yii\base\ErrorException;
-use yii\queue\Queue;
 
 class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInterface
 {
@@ -46,6 +45,7 @@ class GrabMinutesJob extends \yii\base\BaseObject implements \yii\queue\JobInter
 
             if ($this->date > date('Ym')) {
                 echo '处理结束！' . PHP_EOL;
+                die();
             }
 
             $stock = Stocks::find()->where(['>', 'code', '0'])->orderBy(['code' => SORT_ASC])->one();
