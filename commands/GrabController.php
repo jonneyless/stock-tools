@@ -93,7 +93,7 @@ class GrabController extends Controller
         foreach ($codes as $code) {
             $lastCode = substr($code, 2);
 
-            $url = sprintf($this->apiUrl, $code, $date);
+            $url = sprintf('http://finance.sina.com.cn/realstock/company/%s/hisdata/klc_cm.js?day=%s', $code, $date);
 
             try {
                 $data = file_get_contents($url);
