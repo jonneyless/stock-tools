@@ -89,7 +89,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
                 continue;
             } catch (\RuntimeException $e) {
                 echo $e->getMessage() . PHP_EOL;
-                echo $jsData . PHP_EOL;
+                var_dump($match[1]) . PHP_EOL;
                 return;
             }
         }
