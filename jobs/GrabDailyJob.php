@@ -21,6 +21,14 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
      */
     public ?string $code;
 
+    /**
+     * @var int
+     */
+    public int $manual = 0;
+
+    /**
+     * @var string
+     */
     public string $apiUrl = 'http://finance.sina.com.cn/realstock/company/%s/hisdata/klc_cm.js?day=%s';
 
     /**
@@ -45,6 +53,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
         }
 
         $lastCode = '';
+        $dailyMinutes = [];
         foreach ($codes as $code) {
             $lastCode = substr($code, 2);
 
@@ -59,6 +68,9 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
                 if (!isset($match[1])) {
                     throw new ErrorException($code . '没有数据！');
                 }
+
+                $data = array_slice(explode(',', $match[1]), -1, 1);
+                $dailyMinutes[$lastCode] = $execjs->evalJs('decode("' . $data . '")');
             } catch (ErrorException $e) {
                 echo $e->getMessage() . PHP_EOL;
 
@@ -66,26 +78,19 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             }
         }
 
-        print_r($match);
+        print_r($dailyMinutes);
         die();
 
         $command = StockQuotationMinutes::getDb()->createCommand();
-
-        $data = explode(',', $match[1]);
-        foreach ($data as $datum) {
-            $minutes = $execjs->evalJs('decode("' . $datum . '")');
+        foreach ($dailyMinutes as $code => $minutes) {
             $stockDaily = [];
             foreach ($minutes as $minute) {
                 $dailyDate = $minute['date'] ?? null;
                 $price = $minute['price'] ?: 0.00;
 
                 if ($dailyDate) {
-                    if ($stockDaily) {
-                        $command->addInsert($stockDaily);
-                    }
-
                     $stockDaily = [
-                        'code' => $stock['code'],
+                        'code' => $code,
                         'date' => date('Ymd', strtotime($dailyDate)),
                         'opening_price' => $price,
                         'high_price' => $price,
@@ -111,10 +116,15 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
 
         $command->executeBatch(StockQuotationMinutes::collectionName());
 
-        Yii::$app->queue->push(new GrabDailyJob([
-            'date' => $this->date,
-            'code' => $stock['code'],
-        ]));
+        if ($this->manual != 1 && $lastCode) {
+            $codes = $this->getCodes($lastCode);
+
+            Yii::$app->queue->push(new GrabDailyJob([
+                'date' => $date,
+                'code' => join(',', $codes),
+                'manual' => $this->manual,
+            ]));
+        }
     }
 
     /**
@@ -123,7 +133,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
      */
     public function getCodes(?string $code = null)
     {
-        $stocks = Stocks::find()->where(['>', 'code', $this->code ?? '0'])->orderBy(['code' => SORT_ASC])->limit(10)->asArray()->all();
+        $stocks = Stocks::find()->where(['>', 'code', $code ?? '0'])->orderBy(['code' => SORT_ASC])->limit(10)->asArray()->all();
 
         return array_map(function ($stock) {
             return $stock['exchange'] . $stock['code'];

@@ -2,11 +2,10 @@
 
 namespace app\commands;
 
+use app\jobs\GrabDailyJob;
 use app\jobs\GrabMinutesJob;
 use app\models\Stocks;
-use Nacmartin\PhpExecJs\PhpExecJs;
 use Yii;
-use yii\base\ErrorException;
 use yii\console\Controller;
 
 /**
@@ -73,47 +72,12 @@ class GrabController extends Controller
         ]));
     }
 
-    public function actionDaily(?string $date = null, ?string $code = null)
+    public function actionDaily(?string $date = null, ?string $code = null, int $manual = 0)
     {
-        $sdkJs = Yii::$app->basePath . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'sina' . DIRECTORY_SEPARATOR . 'sf_sdk.js';
-        $execjs = new PhpExecJs();
-        $execjs->createContextFromFile($sdkJs);
-
-        if (!$date) {
-            $date = date('Y-m-d');
-        }
-
-        if ($code) {
-            $codes = explode(',', $code);
-        } else {
-            $codes = $this->getCodes();
-        }
-
-        $lastCode = '';
-        foreach ($codes as $code) {
-            $lastCode = substr($code, 2);
-
-            $url = sprintf('http://finance.sina.com.cn/realstock/company/%s/hisdata/klc_cm.js?day=%s', $code, $date);
-
-            try {
-                $data = file_get_contents($url);
-
-                $patten = sprintf('/KLC_ML_%s="(.+?)"/', $code);
-                preg_match($patten, $data, $match);
-
-                if (!isset($match[1])) {
-                    throw new ErrorException($code . '没有数据！');
-                }
-            } catch (ErrorException $e) {
-                echo $e->getMessage() . PHP_EOL;
-
-                continue;
-            }
-        }
-
-        $data = explode(',', $match[1]);
-        $minutes = $execjs->evalJs('decode("' . $data[4] . '")');
-        print_r($minutes);
-        die();
+        Yii::$app->queue->push(new GrabDailyJob([
+            'date' => $date,
+            'code' => $code,
+            'manual' => $manual,
+        ]));
     }
 }
