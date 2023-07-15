@@ -66,10 +66,10 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             $url = sprintf($this->apiUrl, $code, $date);
 
             try {
-                $data = file_get_contents($url);
+                $jsData = file_get_contents($url);
 
                 $patten = sprintf('/KLC_ML_%s="(.+?)"/', $code);
-                preg_match($patten, $data, $match);
+                preg_match($patten, $jsData, $match);
 
                 if (!isset($match[1])) {
                     throw new ErrorException($code . '没有数据！');
@@ -78,11 +78,14 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
                 $data = array_slice(explode(',', $match[1]), -1, 1);
                 $dailyMinutes[$lastCode] = $execjs->evalJs('decode("' . $data[0] . '")');
             } catch (ErrorException $e) {
-            } catch (\RuntimeException $e) {
                 echo $e->getMessage() . PHP_EOL;
 
                 Stocks::updateAll(['status' => 0], ['code' => $lastCode]);
 
+                continue;
+            } catch (\RuntimeException $e) {
+                echo $e->getMessage() . PHP_EOL;
+                echo $jsData . PHP_EOL;
                 continue;
             }
         }
