@@ -75,6 +75,10 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
                     throw new ErrorException($code . '没有数据！');
                 }
 
+                if (!$match[1]) {
+                    continue;
+                }
+
                 $data = array_slice(explode(',', $match[1]), -1, 1);
                 $dailyMinutes[$lastCode] = $execjs->evalJs('decode("' . $data[0] . '")');
             } catch (ErrorException $e) {
