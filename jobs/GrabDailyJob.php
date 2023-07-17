@@ -52,12 +52,6 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             $codes = $this->getCodes();
         }
 
-        if (!$codes) {
-            echo '处理完毕' . PHP_EOL;
-
-            return;
-        }
-
         $lastCode = '';
         $dailyMinutes = [];
         foreach ($codes as $code) {
@@ -106,7 +100,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
 
                 if ($dailyDate) {
                     $stockDaily = [
-                        'code' => $code,
+                        'code' => strval($code),
                         'date' => date('Ymd', strtotime($dailyDate)),
                         'opening_price' => $price,
                         'high_price' => $price,
@@ -134,12 +128,17 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
 
         if ($this->manual != 1 && $lastCode) {
             $codes = $this->getCodes($lastCode);
+            if ($codes) {
+                Yii::$app->queue->push(new GrabDailyJob([
+                    'date' => $date,
+                    'code' => join(',', $codes),
+                    'manual' => $this->manual,
+                ]));
+            }
 
-            Yii::$app->queue->push(new GrabDailyJob([
-                'date' => $date,
-                'code' => join(',', $codes),
-                'manual' => $this->manual,
-            ]));
+            if (!$codes) {
+                echo '处理完毕' . PHP_EOL;
+            }
         }
     }
 
