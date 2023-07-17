@@ -2,6 +2,7 @@
 
 namespace app\jobs;
 
+use app\models\StockQuotationMinutes;
 use app\models\Stocks;
 use Nacmartin\PhpExecJs\PhpExecJs;
 use Yii;
@@ -53,6 +54,7 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
 
         if (!$codes) {
             echo '处理完毕' . PHP_EOL;
+
             return;
         }
 
