@@ -90,44 +90,45 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             } catch (\RuntimeException $e) {
                 echo $e->getMessage() . PHP_EOL;
                 var_dump($match[1]) . PHP_EOL;
+
                 return;
             }
         }
 
-//        $command = StockQuotationMinutes::getDb()->createCommand();
-//        foreach ($dailyMinutes as $code => $minutes) {
-//            $stockDaily = [];
-//            foreach ($minutes as $minute) {
-//                $dailyDate = $minute['date'] ?? null;
-//                $price = $minute['price'] ?: 0.00;
-//
-//                if ($dailyDate) {
-//                    $stockDaily = [
-//                        'code' => $code,
-//                        'date' => date('Ymd', strtotime($dailyDate)),
-//                        'opening_price' => $price,
-//                        'high_price' => $price,
-//                        'low_price' => $price,
-//                        'minutes' => [],
-//                    ];
-//                }
-//
-//                $stockDaily['closing_price'] = $price;
-//                $stockDaily['high_price'] = max($stockDaily['high_price'], $price);
-//                $stockDaily['low_price'] = min($stockDaily['low_price'], $price);
-//                $stockDaily['minutes'][] = [
-//                    'volume' => $minute['volume'] ?? 0,
-//                    'price' => $price,
-//                    'avg_price' => $minute['avg_price'] ?? 0.00,
-//                ];
-//            }
-//
-//            if ($stockDaily) {
-//                $command->addInsert($stockDaily);
-//            }
-//        }
-//
-//        $command->executeBatch(StockQuotationMinutes::collectionName());
+        $command = StockQuotationMinutes::getDb()->createCommand();
+        foreach ($dailyMinutes as $code => $minutes) {
+            $stockDaily = [];
+            foreach ($minutes as $minute) {
+                $dailyDate = $minute['date'] ?? null;
+                $price = $minute['price'] ? : 0.00;
+
+                if ($dailyDate) {
+                    $stockDaily = [
+                        'code' => $code,
+                        'date' => date('Ymd', strtotime($dailyDate)),
+                        'opening_price' => $price,
+                        'high_price' => $price,
+                        'low_price' => $price,
+                        'minutes' => [],
+                    ];
+                }
+
+                $stockDaily['closing_price'] = $price;
+                $stockDaily['high_price'] = max($stockDaily['high_price'], $price);
+                $stockDaily['low_price'] = min($stockDaily['low_price'], $price);
+                $stockDaily['minutes'][] = [
+                    'volume' => $minute['volume'] ?? 0,
+                    'price' => $price,
+                    'avg_price' => $minute['avg_price'] ?? 0.00,
+                ];
+            }
+
+            if ($stockDaily) {
+                $command->addInsert($stockDaily);
+            }
+        }
+
+        $command->executeBatch(StockQuotationMinutes::collectionName());
 
         if ($this->manual != 1 && $lastCode) {
             $codes = $this->getCodes($lastCode);
