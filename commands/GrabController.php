@@ -4,6 +4,7 @@ namespace app\commands;
 
 use app\jobs\GrabDailyJob;
 use app\jobs\GrabMinutesJob;
+use app\models\StockQuotationMinutes;
 use app\models\Stocks;
 use Yii;
 use yii\console\Controller;
@@ -74,6 +75,12 @@ class GrabController extends Controller
 
     public function actionDaily(?string $date = null, ?string $code = null, int $manual = 0)
     {
+        if ($date === null) {
+            $date = date('Ymd');
+        } else {
+            $date = date('Ymd', strtotime($date));
+        }
+        StockQuotationMinutes::deleteAll(['date' => $date]);
         Yii::$app->queue->push(new GrabDailyJob([
             'date' => $date,
             'code' => $code,
