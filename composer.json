@@ -22,7 +22,8 @@
         "yiisoft/yii2-mongodb": "^3.0",
         "yiisoft/yii2-redis": "*",
         "yiisoft/yii2-queue": "^2.3",
-        "nacmartin/phpexecjs": "^3.1"
+        "nacmartin/phpexecjs": "^3.1",
+        "omnilight/yii2-scheduling": "^1.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
