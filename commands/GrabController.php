@@ -76,11 +76,12 @@ class GrabController extends Controller
     public function actionDaily(?string $date = null, ?string $code = null, int $manual = 0)
     {
         if ($date === null) {
-            $date = date('Ymd');
-        } else {
-            $date = date('Ymd', strtotime($date));
+            $dataDate = date('Y-m-d');
         }
-        StockQuotationMinutes::deleteAll(['date' => $date]);
+
+        $dataDate = date('Ymd', strtotime($date));
+
+        StockQuotationMinutes::deleteAll(['date' => $dataDate]);
         Yii::$app->queue->push(new GrabDailyJob([
             'date' => $date,
             'code' => $code,
