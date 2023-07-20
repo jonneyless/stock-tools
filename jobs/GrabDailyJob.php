@@ -122,13 +122,16 @@ class GrabDailyJob extends \yii\base\BaseObject implements \yii\queue\JobInterfa
             if ($stockDaily) {
                 // 非当天数据
                 if ($stockDaily['date'] != date('Ymd', strtotime($date))) {
+                    echo $code . '非当天数据。' . PHP_EOL;
                     continue;
                 }
                 $command->addInsert($stockDaily);
             }
         }
 
-        $command->executeBatch(StockQuotationMinutes::collectionName());
+        if ($command->document) {
+            $command->executeBatch(StockQuotationMinutes::collectionName());
+        }
 
         if ($this->manual != 1 && $lastCode) {
             $codes = $this->getCodes($lastCode);
